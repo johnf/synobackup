@@ -39,7 +39,7 @@ Be mindful that you need to allow enough time for your backups to complete.
 
 Build the docker image
 
-    docker build -t synology-hyperbackup-schedule .
+    docker build -t johnf/synology-hyperbackup-schedule .
 
 Run the docker image manually
 
@@ -52,5 +52,5 @@ Run the docker image manually
       -e START_HOUR=1 \
       -e END_HOUR=7 \
       -e TZ="Australia/Sydney" \
-      synology-hyperbackup-schedule
+      johnf/synology-hyperbackup-schedule
 
