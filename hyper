@@ -1,0 +1,124 @@
+#!/usr/bin/env ruby
+
+require 'httparty'
+require 'rufus-scheduler'
+
+class Backup
+  include HTTParty
+  format :json
+
+  def initialize(dsm, username, password)
+    self.class.base_uri dsm
+    @sid = login(username, password)
+  end
+
+  def login(username, password)
+    params = {
+      api: 'SYNO.API.Auth',
+      version: 3,
+      method: 'login',
+      account: username,
+      passwd: password,
+      session: 'sessionName',
+      format: 'sid'
+    }
+
+    response = self.class.get('/webapi/auth.cgi', query: params)
+
+    return response.parsed_response['data']['sid']
+  end
+
+  def logout
+    params = {
+      api: 'SYNO.API.Auth',
+      version: 3,
+      method: 'logout',
+      session: 'sessionName',
+    }
+
+    self.class.get('/webapi/auth.cgi', query: params)
+  end
+
+  def tasks
+    params = {
+      api: 'SYNO.Backup.Task',
+      version: 1,
+      method: 'list',
+      sessionName: 'sessionName',
+      _sid: @sid,
+    }
+
+    response = self.class.get('/webapi/entry.cgi', query: params)
+
+    response.parsed_response['data']['task_list']
+  end
+
+  def suspend(task_id)
+    params = {
+      api: 'SYNO.Backup.Task',
+      version: 1,
+      method: 'suspend',
+      sessionName: 'sessionName',
+      _sid: @sid,
+      task_id: task_id,
+    }
+
+    self.class.get('/webapi/entry.cgi', query: params).parsed_response
+  end
+
+  def resume(task_id)
+    params = {
+      api: 'SYNO.Backup.Task',
+      version: 1,
+      method: 'resume',
+      sessionName: 'sessionName',
+      _sid: @sid,
+      task_id: task_id,
+    }
+
+    self.class.get('/webapi/entry.cgi', query: params).parsed_response
+  end
+end
+
+
+dsm = ENV['DSM']
+username = ENV['USERNAME']
+password = ENV['PASSWORD']
+start_hour = ENV['START_HOUR']
+end_hour = ENV['END_HOUR']
+start_cron = ENV['START_CRON'] || "0 #{start_hour} * * *"
+end_cron = ENV['END_CRON'] || "0 #{end_hour} * * *"
+
+puts "Connecting to #{dsm}"
+puts "Start Cron: #{start_cron}"
+puts "End Cron: #{end_cron}"
+puts "Current time: #{Time.now}"
+
+backup = Backup.new(dsm, username, password)
+
+scheduler = Rufus::Scheduler.new
+
+scheduler.cron(start_cron) do
+  puts 'Resuming backup tasks'
+
+  tasks = backup.tasks
+
+  tasks.each do |task|
+    puts "resuming #{task['task_name']}"
+    response = backup.resume task['task_id']
+    puts response
+  end
+end
+
+scheduler.cron(end_cron) do
+  puts 'Suspending backup tasks'
+  tasks = backup.tasks
+
+  tasks.each do |task|
+    puts "suspending #{task['task_name']}"
+    response = backup.suspend task['task_id']
+    puts response
+  end
+end
+
+scheduler.join

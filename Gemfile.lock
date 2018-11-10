@@ -1,0 +1,27 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    et-orbi (1.1.6)
+      tzinfo
+    fugit (1.1.6)
+      et-orbi (~> 1.1, >= 1.1.6)
+      raabro (~> 1.1)
+    httparty (0.16.2)
+      multi_xml (>= 0.5.2)
+    multi_xml (0.6.0)
+    raabro (1.1.6)
+    rufus-scheduler (3.5.2)
+      fugit (~> 1.1, >= 1.1.5)
+    thread_safe (0.3.6)
+    tzinfo (1.2.5)
+      thread_safe (~> 0.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  httparty
+  rufus-scheduler
+
+BUNDLED WITH
+   1.16.1
