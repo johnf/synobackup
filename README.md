@@ -41,6 +41,10 @@ Build the docker image
 
     docker build -t johnf/synology-hyperbackup-schedule .
 
+Publish
+
+    docker push johnf/synology-hyperbackup-schedule
+
 Run the docker image manually
 
     docker run \
