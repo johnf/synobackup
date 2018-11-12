@@ -58,6 +58,7 @@ class Backup
       api: 'SYNO.Backup.Task',
       version: 1,
       method: 'suspend',
+      task_state: 'backupable',
       sessionName: 'sessionName',
       _sid: @sid,
       task_id: task_id,
