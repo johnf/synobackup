@@ -7,8 +7,11 @@ class Backup
   include HTTParty
   format :json
 
-  def initialize(dsm, username, password)
+  def initialize(dsm, username, password, verify_ssl = true)
     self.class.base_uri dsm
+    if !verify_ssl
+      self.class.default_options.update(verify: false)
+    end
     @sid = login(username, password)
   end
 
@@ -41,6 +44,7 @@ class Backup
 
   def tasks
     params = {
+      additional: '["last_bkp_result"]',
       api: 'SYNO.Backup.Task',
       version: 1,
       method: 'list',
@@ -89,13 +93,14 @@ start_hour = ENV['START_HOUR']
 end_hour = ENV['END_HOUR']
 start_cron = ENV['START_CRON'] || "0 #{start_hour} * * *"
 end_cron = ENV['END_CRON'] || "0 #{end_hour} * * *"
+verify_ssl = !(ENV['VERIFY_SSL'] == 'false')
 
 puts "Connecting to #{dsm}"
 puts "Start Cron: #{start_cron}"
 puts "End Cron: #{end_cron}"
 puts "Current time: #{Time.now}"
 
-backup = Backup.new(dsm, username, password)
+backup = Backup.new(dsm, username, password, verify_ssl)
 
 scheduler = Rufus::Scheduler.new
 
@@ -103,9 +108,10 @@ scheduler.cron(start_cron) do
   puts 'Resuming backup tasks'
 
   tasks = backup.tasks
+  tasks = tasks.select {|t| t['last_bkp_result'] == 'suspend' }
 
   tasks.each do |task|
-    puts "resuming #{task['task_name']}"
+    puts "resuming #{task['name']}"
     response = backup.resume task['task_id']
     puts response
   end
@@ -114,9 +120,10 @@ end
 scheduler.cron(end_cron) do
   puts 'Suspending backup tasks'
   tasks = backup.tasks
+  tasks = tasks.select {|t| t['last_bkp_result'] == 'backingup' }
 
   tasks.each do |task|
-    puts "suspending #{task['task_name']}"
+    puts "suspending #{task['name']}"
     response = backup.suspend task['task_id']
     puts response
   end

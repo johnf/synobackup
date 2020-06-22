@@ -19,6 +19,7 @@ You will need to set the following environment variables
   to admin
 * **PASSWORD** - The password for the above user
 * **TZ** - Times default to GMT without a timezone e.g. Australia/Sydney
+* **VERIFY_SSL** - Set to false to skip SSL host verificaiton. 
 
 You can then control start and stop in two ways, first by setting an hour of the
 day
