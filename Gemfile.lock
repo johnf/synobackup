@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    concurrent-ruby (1.1.10)
     et-orbi (1.1.6)
       tzinfo
     fugit (1.1.6)
@@ -12,9 +13,8 @@ GEM
     raabro (1.1.6)
     rufus-scheduler (3.5.2)
       fugit (~> 1.1, >= 1.1.5)
-    thread_safe (0.3.6)
-    tzinfo (1.2.5)
-      thread_safe (~> 0.1)
+    tzinfo (2.0.5)
+      concurrent-ruby (~> 1.0)
 
 PLATFORMS
   ruby
